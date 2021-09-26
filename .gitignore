@@ -1,0 +1,6 @@
+# venv and vscode files
+.venv
+.vscode
+
+# data files
+data
