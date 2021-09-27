@@ -1,8 +1,6 @@
 from datetime import datetime
 import requests
 from bs4 import BeautifulSoup
-from hashlib import md5
-from requests.sessions import RecentlyUsedContainer
 
 from utils import get_files_in_dir
 
@@ -12,14 +10,13 @@ def get_date_updated_on(soup):
     updated_on_str = updated_on_str.lower().lstrip('updated ')
     return datetime.strptime(updated_on_str, '%B %d, %Y')
 
-def get_file_checksum(f):
-    pass
-
 def save_file(file_url, fname):
     """Download the file from the url."""
     req = requests.get(file_url, allow_redirects=True)
+    print(fname)
     with open(fname, 'wb') as output:
         output.write(req.content)
+
         
 def get_file_from_ucs_page(url='https://www.ucsusa.org/resources/satellite-database', data_dir='data'):
     """Read the UCS webpage to determine if there is a new file available. If yes, then save it."""
@@ -32,7 +29,7 @@ def get_file_from_ucs_page(url='https://www.ucsusa.org/resources/satellite-datab
     updated_on = get_date_updated_on(soup)
 
     # Create filename with updated_on date 
-    read_fname = 'usc_satellites_' + datetime.strftime(updated_on, '%Y%b%d') + '.csv'
+    read_fname = data_dir + '/usc_satellites_' + datetime.strftime(updated_on, '%Y%b%d') + '.xls'
     # Get the contents of the data_dir file where the file should be located, if already saved
     data_files = get_files_in_dir(data_dir)
     # if the data dir is empty OR a filename matching the most recent version is not in the dir, save the new file
@@ -41,7 +38,8 @@ def get_file_from_ucs_page(url='https://www.ucsusa.org/resources/satellite-datab
         for a in soup.find_all('a', href=True):
             if ('/media/' in a['href']) & (a.contents[0] == 'Database'):
                 db_filelist.append(a['href'])
-        file_path = db_filelist[0]  # the first one is the Excel version.
+        file_path = db_filelist[0]  # doesn't matter which one we save as long as we save to excel
+        # both links work saving to excel, but one format does not save to csv well
         save_file(protocol + '//' + domain + file_path, read_fname)
     
     return read_fname
