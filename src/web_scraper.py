@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import utils
 
 #### General webscraping functions
+
 def save_web_file(file_url, fname):
     """Download the file from the url."""
     req = requests.get(file_url, allow_redirects=True)
@@ -32,7 +33,7 @@ def get_ucs_date_updated_on(soup):
         
 def get_file_from_ucs_page(url='https://www.ucsusa.org/resources/satellite-database', data_dir='data'):
     """Read the UCS webpage to determine if there is a new file available. If yes, then save it."""
-    protocol, domain = utils.split_url(url)  # get the transfer protocol and domain to build linked url later
+    protocol, domain = utils.split_url_protocol(url)  # get the transfer protocol and domain to build linked url later
     soup, updated_on = get_webpage_contents(url)
 
     # Create filename with updated_on date 
@@ -51,3 +52,11 @@ def get_file_from_ucs_page(url='https://www.ucsusa.org/resources/satellite-datab
         # both links work saving to excel, but one format does not save to csv well
         save_web_file(protocol + '//' + domain + db_url_path,  save_sat_fname)
     return save_sat_fname
+
+# Planetary Org's NASA budget
+def get_nasa_budget(url='https://www.planetary.org/space-policy/nasa-budget', data_dir='data'):
+    pass
+
+# Country's GDPs
+def get_global_gdp(url, data_dir='data'):
+    pass 

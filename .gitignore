@@ -1,6 +1,10 @@
-# venv and vscode files
+# env files
 .venv
 .vscode
+*__pycache__
 
 # data files
 data
+
+# Jupyter notebooks
+notebooks
