@@ -42,8 +42,8 @@ def get_daily_launches(df):
     daily_launched_count = df.groupby('Date of Launch')['NORAD Number'].count().reset_index()
     daily_launched_count = daily_launched_count.rename(columns={'NORAD Number': 'n_satellites'})
     daily_launched_count = daily_launched_count.sort_values('Date of Launch')  # ensure sorted dates
-    # create quantitative, incremental field for date from qualitative
-    daily_launched_count['Launched Day'] = np.arange(daily_launched_count['Date of Launch'].nunique)
+    # create quantitative, incremental field for date from qualitative - days = timesteps
+    daily_launched_count['Launched Day'] = np.arange(1, daily_launched_count['Date of Launch'].nunique + 1)
     return daily_launched_count
 
 def plot_launches_over_time(daily_count_df):
@@ -71,29 +71,25 @@ def agg_metrics(df):
     """
     # store the results of a groupby operation
     # Key = grouped column, Value = Series
-    count_dic = {
-        'Country of Operator/Owner': None,
-        'Users': None,
-        'Purpose': None,
-        'Operator/Owner': None,
-        'Class of Orbit': None,
-    }
+    key_cols = ['Country of Operator/Owner', 'Users', 'Purpose', 'Operator/Owner', 'Class of Orbit']
+    count_dict = {key: None for key in key_cols}
 
-    def count_group(col_grp, count='NORAD Number'):
+    def count_group(col_group, count='NORAD Number'):
         """Count the number of records in the 'count' columns for each group in column 'col_grp'.
         Generally, this should be a count of the Satellite Catalogue number (NORAD Number).
 
         Should be updated to be used in accord with an if-then statement,
         if any changes to agg method are needed. 
         """
-        return df.groupby(col_grp)[count].count()
+        return df.groupby(col_group)[count].count()
     
-    for k in count_dic:
-        count_dic[k] = count_group(k)
+    for k in count_dict:
+        count_dict[k] = count_group(k)
 
-    return count_dic
+    return count_dict
 
 def main(n=5):
+    """Main method to run functionality. Let n be the number of top results to display."""
     filename = get_ucs_sat_file()
     df = get_satellites_df(filename)
     print('Earliest satellite launch date recorded: {}'.format(

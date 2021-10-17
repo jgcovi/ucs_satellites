@@ -1,5 +1,4 @@
 from datetime import datetime
-from functools import update_wrapper
 import requests
 from bs4 import BeautifulSoup
 
