@@ -12,8 +12,8 @@ def clean_sat_df(df_orig):
     - Fill nulls in valid, object dtype columns for ease of groupings
     - Create new fields from existing columns
 
-    We know from earlier exploration of the dataset that all unnamed columns have little useful information.
-    Only a few unnamed cols have any data at all (<10 rows as of 2021 May). 
+    We know from earlier exploration of the dataset that all unnamed columns have little useful 
+    information. Only a few unnamed cols have any data at all (<10 rows as of 2021 May). 
     None of these columns are worth keeping, so they will be dropped.
     """
     valid_cols = [col for col in df_orig.columns if "unnamed:" not in col.lower()]
@@ -25,8 +25,9 @@ def clean_sat_df(df_orig):
     df[df.select_dtypes('object').columns] = df.select_dtypes('object').fillna('')
 
     # Calculate estimated end of lifetime
-    df['Expected End Date'] = df['Date of Launch'] + pd.to_timedelta(df['Expected Lifetime (yrs.)'] * 365, unit='day')
-    
+    df['Expected End Date'] = (
+        df['Date of Launch'] + pd.to_timedelta(df['Expected Lifetime (yrs.)'] * 365, unit='day')
+    )
     return df
 
 def get_satellites_df(fname):
@@ -56,19 +57,42 @@ def agg_metrics(df):
     
     How many satellites have been launched by:
     - country (of owner or operator)
-    - entity (civil, govt, commercial)
+    - entity (users - civil, govt, commercial)
     - purpose
-    - date
     
     Who are the top owners and operators contributing to satellite launches?
     How many satellites are in GEO, MEO, LEO, and Elliptic orbit?
     """
-    pass
+    # store the results of a groupby operation
+    # Key = grouped column, Value = Series
+    count_dic = {
+        'Country of Operator/Owner': None,
+        'Users': None,
+        'Purpose': None,
+        'Operator/Owner': None,
+        'Class of Orbit': None,
+    }  
+
+    def count_group(col_grp, count='NORAD Number'):
+        """Count the number of records in the 'count' columns for each group in column 'col_grp'.
+        Generally, this should be a count of the Satellite Catalogue number (NORAD Number).
+
+        Should be updated to be used in accord with an if-then statement,
+        if any changes to agg method are needed. 
+        """
+        return df.groupby(col_grp)[count].count()
+    
+    for k in count_dic:
+        count_dic[k] = count_group(k)
+
+    return count_dic
 
 def main():
     filename = get_ucs_sat_file()
     df = get_satellites_df(filename)
     plot_launches_over_time(df)
+
+    counts = agg_metrics(df)
 
 if __name__ == '__main__':
     main()
