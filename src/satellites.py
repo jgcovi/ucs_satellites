@@ -22,7 +22,7 @@ def clean_sat_df(df_orig):
     # Fills nulls - currently no need to fill numerics.
     # num_types = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
     # df[df.select_dtypes(num_types).columns] = df.select_dtypes(num_types).fillna(0)
-    df[df.select_dtypes('object').columns] = df.select_dtypes('object').fillna('')
+    df[df.select_dtypes('object').columns] = df.select_dtypes('object').fillna('Unknown')
 
     # Calculate estimated end of lifetime
     df['Expected End Date'] = (
@@ -37,17 +37,23 @@ def get_satellites_df(fname):
 
     return sat_df
 
-def plot_launches_over_time(df):
-    """Plot a count of satellites (by NORAD Number) launched over the timespan covered in the dataset."""
+def get_daily_launches(df):
+    """Get a new dataframe of Date of Launch and Count of Satellites."""
     daily_launched_count = df.groupby('Date of Launch')['NORAD Number'].count().reset_index()
     daily_launched_count = daily_launched_count.rename(columns={'NORAD Number': 'n_satellites'})
-    
+    daily_launched_count = daily_launched_count.sort_values('Date of Launch')  # ensure sorted dates
+    # create quantitative, incremental field for date from qualitative
+    daily_launched_count['Launched Day'] = np.arange(daily_launched_count['Date of Launch'].nunique)
+    return daily_launched_count
+
+def plot_launches_over_time(daily_count_df):
+    """Plot a count of satellites (by NORAD Number) launched over the timespan covered in the dataset."""
     fig, ax = plt.subplots()
     fig.set_size_inches(15, 5)
     ax.xaxis.set_major_formatter(DateFormatter('%B %Y'))
 
     sns.lineplot(
-        x=daily_launched_count['Date of Launch'], y=daily_launched_count['n_satellites'], 
+        x=daily_count_df['Date of Launch'], y=daily_count_df['n_satellites'], 
         linewidth=3,  color='green'
     ).set(title='Number of Satellites Launched by Date')
     plt.show()
@@ -71,7 +77,7 @@ def agg_metrics(df):
         'Purpose': None,
         'Operator/Owner': None,
         'Class of Orbit': None,
-    }  
+    }
 
     def count_group(col_grp, count='NORAD Number'):
         """Count the number of records in the 'count' columns for each group in column 'col_grp'.
@@ -87,12 +93,26 @@ def agg_metrics(df):
 
     return count_dic
 
-def main():
+def main(n=5):
     filename = get_ucs_sat_file()
     df = get_satellites_df(filename)
-    plot_launches_over_time(df)
+    print('Earliest satellite launch date recorded: {}'.format(
+        df['Date of Launch'].min().strftime('%d %B %Y')
+        )
+    )
+    print('Most recent satellite launch date recorded: {}\n'.format(
+        df['Date of Launch'].max().strftime('%d %B %Y')
+        )
+    )
+    # daily_count_df = get_daily_launches(df)
+    # plot_launches_over_time(daily_count_df)
 
+    print("Top {} count of launched satellites by:\n".format(n))
     counts = agg_metrics(df)
+    for k, v in counts.items():
+        print(v.nlargest(n).to_string())
+        print()
+
 
 if __name__ == '__main__':
     main()
