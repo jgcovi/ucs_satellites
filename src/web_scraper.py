@@ -18,23 +18,22 @@ def get_webpage_contents(url):
     """Return webpage contents from a url."""
     page = requests.get(url)
     soup = BeautifulSoup(page.content, 'html.parser')
-    updated_on = get_ucs_date_updated_on(soup)
 
-    return soup, updated_on
+    return soup
 
 #### Page specific functions
 
 # Union of Concerned Scientists webpage
 def get_ucs_date_updated_on(soup):
     """Get the date of the last page update."""
-    updated_on_str = soup.find_all('span', attrs={'class': "date-updated"})[0].contents[0]
-    updated_on_str = updated_on_str.lower().lstrip('updated ')
+    updated_on_str = soup.find_all('span', attrs={'class': "date-updated"})[0].contents[0].lower().lstrip('updated ')
     return datetime.strptime(updated_on_str, '%B %d, %Y')
         
-def get_file_from_ucs_page(url='https://www.ucsusa.org/resources/satellite-database', data_dir='data'):
+def get_ucs_sat_file(url='https://www.ucsusa.org/resources/satellite-database', data_dir='data'):
     """Read the UCS webpage to determine if there is a new file available. If yes, then save it."""
     protocol, domain = utils.split_url_protocol(url)  # get the transfer protocol and domain to build linked url later
-    soup, updated_on = get_webpage_contents(url)
+    soup = get_webpage_contents(url)
+    updated_on = get_ucs_date_updated_on(soup)
 
     # Create filename with updated_on date 
     sat_fname = 'usc_satellites_' + datetime.strftime(updated_on, '%Y%b%d') + '.xls'

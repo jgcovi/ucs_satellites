@@ -4,7 +4,7 @@ from matplotlib.dates import DateFormatter
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from web_scraper import get_file_from_ucs_page
+from web_scraper import get_ucs_sat_file
 
 def clean_sat_df(df_orig):
     """Clean the dataframe: 
@@ -28,7 +28,7 @@ def get_satellites_df(fname):
     return sat_df
 
 def main():
-    filename = get_file_from_ucs_page()
+    filename = get_ucs_sat_file()
     df = get_satellites_df(filename)
     print(df.head())
 
