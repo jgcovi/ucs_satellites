@@ -1,10 +1,13 @@
-import pandas as pd
-import numpy as np
-from matplotlib.dates import DateFormatter
+from datetime import timedelta
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import seaborn as sns
+from matplotlib.dates import DateFormatter
 
 from web_scraper import get_ucs_sat_file
+
 
 def clean_sat_df(df_orig):
     """Clean the dataframe: 
@@ -42,8 +45,6 @@ def get_daily_launches(df):
     daily_launched_count = df.groupby('Date of Launch')['NORAD Number'].count().reset_index()
     daily_launched_count = daily_launched_count.rename(columns={'NORAD Number': 'n_satellites'})
     daily_launched_count = daily_launched_count.sort_values('Date of Launch')  # ensure sorted dates
-    # create quantitative, incremental field for date from qualitative - days = timesteps
-    daily_launched_count['Launched Day'] = np.arange(1, daily_launched_count['Date of Launch'].nunique + 1)
     return daily_launched_count
 
 def plot_launches_over_time(daily_count_df):
@@ -87,6 +88,22 @@ def agg_metrics(df):
         count_dict[k] = count_group(k)
 
     return count_dict
+
+def get_quant_table():
+    filename = get_ucs_sat_file()
+    df = get_satellites_df(filename)
+
+    daily = get_daily_launches(df)
+    date_range = pd.DataFrame(
+    pd.date_range(
+            daily['Date of Launch'].min() - timedelta(days=1),
+            daily['Date of Launch'].max()
+        ), columns=['Date of Launch']
+    )
+    date_range['day'] = np.arange(date_range.size)
+
+    quant_table = pd.merge(date_range, daily, on='Date of Launch', how='left').fillna(0)
+    return quant_table
 
 def main(n=5):
     """Main method to run functionality. Let n be the number of top results to display."""
