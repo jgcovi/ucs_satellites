@@ -9,7 +9,8 @@ import utils
 def save_web_file(file_url, fname):
     """Download the file from the url."""
     req = requests.get(file_url, allow_redirects=True)
-    print(fname)
+    print("Downloading file: ", fname)
+    print()
     with open(fname, 'wb') as output:
         output.write(req.content)
 
@@ -26,7 +27,7 @@ def get_webpage_contents(url):
 def get_ucs_date_updated_on(soup):
     """Get the date of the last page update."""
     updated_on_str = soup.find_all('span', attrs={'class': "date-updated"})[0].contents[0].lower().lstrip('updated ')
-    return datetime.strptime(updated_on_str, '%B %d, %Y')
+    return datetime.strptime(updated_on_str.lower(), '%b %d, %Y')
         
 def get_ucs_sat_file(url='https://www.ucsusa.org/resources/satellite-database', data_dir='data'):
     """Read the UCS webpage to determine if there is a new file available. If yes, then save it."""
@@ -54,7 +55,3 @@ def get_ucs_sat_file(url='https://www.ucsusa.org/resources/satellite-database', 
 # Planetary Org's NASA budget
 def get_nasa_budget(url='https://www.planetary.org/space-policy/nasa-budget', data_dir='data'):
     pass
-
-# Country's GDPs
-def get_global_gdp(url, data_dir='data'):
-    pass 
