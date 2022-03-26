@@ -117,8 +117,6 @@ def main(n=5):
         df['Date of Launch'].max().strftime('%d %B %Y')
         )
     )
-    daily_count_df = get_daily_launches(df)
-    plot_launches_over_time(daily_count_df)
 
     print("Top {} count of launched satellites by:\n".format(n))
     counts = agg_metrics(df)
@@ -126,6 +124,8 @@ def main(n=5):
         print(v.nlargest(n).to_string())
         print()
 
+    daily_count_df = get_daily_launches(df)
+    plot_launches_over_time(daily_count_df)
 
 if __name__ == '__main__':
     main()
